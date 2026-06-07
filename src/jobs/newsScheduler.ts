@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// 뉴스 스케줄러: 수집 → 적재 → 로테이션
+// 뉴스 스케줄러: 수집 → 적재
 // ─────────────────────────────────────────────────────────────
 import cron from 'node-cron';
 import { env } from '../config/env.js';
@@ -10,7 +10,7 @@ import { scrapeArticleDetails } from '../utils/scraper.js';
 import { mapCategory } from '../utils/categoryMapper.js';
 import { fetchNaverNews } from '../utils/naverApi.js';
 
-// ── 2) Supabase 다건 삽입(INSERT) ─────────────────────────────
+// ── 1) Supabase 다건 삽입(INSERT) ─────────────────────────────
 async function saveArticles(articles: NewsArticleInsert[]): Promise<void> {
   const { error } = await supabase
     .from('news_articles')
@@ -21,42 +21,7 @@ async function saveArticles(articles: NewsArticleInsert[]): Promise<void> {
   }
 }
 
-// ── 3) 로테이션: 각 키워드별로 최근 N개만 유지 ─────────────────────────────
-async function rotateOldRecords(): Promise<void> {
-  for (const keyword of env.SEARCH_KEYWORDS) {
-    const { data: recentRows, error: selectError } = await supabase
-      .from('news_articles')
-      .select('id')
-      .eq('keyword', keyword)
-      .order('collected_at', { ascending: false })
-      .limit(env.MAX_RECORDS_KEEP);
-
-    if (selectError) {
-      console.error(`로테이션 조회(SELECT) 실패 (${keyword}): ${selectError.message}`);
-      continue;
-    }
-
-    if (!recentRows || recentRows.length === 0) {
-      continue;
-    }
-
-    const keepIds = recentRows.map((row: { id: number }) => row.id);
-
-    const { error: deleteError } = await supabase
-      .from('news_articles')
-      .delete()
-      .eq('keyword', keyword)
-      .not('id', 'in', `(${keepIds.join(',')})`);
-
-    if (deleteError) {
-      console.error(`로테이션 삭제(DELETE) 실패 (${keyword}): ${deleteError.message}`);
-    }
-  }
-
-  console.log(`🗑️  로테이션 완료 — 각 키워드별 최근 ${env.MAX_RECORDS_KEEP}건 유지`);
-}
-
-// ── 4) 메인 작업(Job): 키워드별 수집 → 적재 ───────────────────
+// ── 2) 메인 작업(Job): 키워드별 수집 → 적재 ───────────────────
 async function runNewsJob(): Promise<void> {
   const startTime = Date.now();
   console.log(`\n📰 [${new Date().toISOString()}] 뉴스 수집 작업 시작...`);
@@ -128,19 +93,11 @@ async function runNewsJob(): Promise<void> {
     }
   }
 
-  // 4) 로테이션
-  try {
-    await rotateOldRecords();
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`  ❌ 로테이션 실패: ${message}`);
-  }
-
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   console.log(`📰 뉴스 수집 작업 완료 (${elapsed}초)\n`);
 }
 
-// ── 5) 스케줄러 등록 ─────────────────────────────────────────
+// ── 3) 스케줄러 등록 ─────────────────────────────────────────
 export function startScheduler(): void {
   cron.schedule('*/30 * * * *', () => {
     runNewsJob().catch((err: unknown) => {
