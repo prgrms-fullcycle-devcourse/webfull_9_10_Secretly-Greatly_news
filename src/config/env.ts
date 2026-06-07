@@ -38,7 +38,6 @@ export const env: EnvConfig = {
   SUPABASE_SERVICE_ROLE_KEY: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   NAVER_CLIENT_ID: requireEnv("NAVER_CLIENT_ID"),
   NAVER_CLIENT_SECRET: requireEnv("NAVER_CLIENT_SECRET"),
-  GEMINI_API_KEY: requireEnv("GEMINI_API_KEY"),
   SEARCH_KEYWORDS: (process.env["SEARCH_KEYWORDS"] ?? "주식,코인,암호화폐,경제")
     .split(",")
     .map((s) => s.trim()),

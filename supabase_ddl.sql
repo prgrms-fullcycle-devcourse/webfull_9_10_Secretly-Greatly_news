@@ -11,8 +11,7 @@ CREATE TABLE IF NOT EXISTS news_articles (
     pub_date      TEXT        NOT NULL,
     source        TEXT        NOT NULL DEFAULT '',
     category      TEXT        NOT NULL DEFAULT 'general',
-    ai_summary    TEXT,
-    ai_keywords   TEXT[],
+    summary       TEXT,
     collected_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

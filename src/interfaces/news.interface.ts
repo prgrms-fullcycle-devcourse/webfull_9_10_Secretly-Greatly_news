@@ -12,7 +12,6 @@ export interface EnvConfig {
   readonly SUPABASE_SERVICE_ROLE_KEY: string;
   readonly NAVER_CLIENT_ID: string;
   readonly NAVER_CLIENT_SECRET: string;
-  readonly GEMINI_API_KEY: string;
   readonly SEARCH_KEYWORDS: string[];
   readonly NEWS_DISPLAY_COUNT: number;
   readonly MAX_RECORDS_KEEP: number;
@@ -54,8 +53,7 @@ export interface NewsArticleRow {
   readonly pub_date: string;
   readonly source: string;
   readonly category: ArticleCategory;
-  readonly ai_summary?: string | null;
-  readonly ai_keywords?: string[] | null;
+  readonly summary?: string | null;
   readonly collected_at: string;
 }
 
@@ -68,8 +66,7 @@ export interface NewsArticleInsert {
   readonly pub_date: string;
   readonly source: string;
   readonly category: ArticleCategory;
-  readonly ai_summary?: string | null;
-  readonly ai_keywords?: string[] | null;
+  readonly summary?: string | null;
 }
 
 // ── API 응답 포맷 ───────────────────────────────────────────
