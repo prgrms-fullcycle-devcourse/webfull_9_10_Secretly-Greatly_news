@@ -12,7 +12,9 @@ import { fetchNaverNews } from '../utils/naverApi.js';
 
 // ── 2) Supabase 다건 삽입(INSERT) ─────────────────────────────
 async function saveArticles(articles: NewsArticleInsert[]): Promise<void> {
-  const { error } = await supabase.from('news_articles').insert(articles);
+  const { error } = await supabase
+    .from('news_articles')
+    .upsert(articles, { onConflict: 'link', ignoreDuplicates: true });
 
   if (error) {
     throw new Error(`Supabase INSERT 실패: ${error.message}`);

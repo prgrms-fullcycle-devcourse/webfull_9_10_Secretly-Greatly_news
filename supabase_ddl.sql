@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS news_articles (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     keyword       TEXT        NOT NULL,
     title         TEXT        NOT NULL,
-    link          TEXT        NOT NULL,
+    link          TEXT        NOT NULL UNIQUE,
     description   TEXT        NOT NULL DEFAULT '',
     pub_date      TEXT        NOT NULL,
     source        TEXT        NOT NULL DEFAULT '',
