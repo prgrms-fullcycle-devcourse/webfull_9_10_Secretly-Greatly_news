@@ -1,21 +1,14 @@
-import express, { type Request, type Response } from 'express';
+import express from 'express';
 import { env } from './config/env.js';
 import { startScheduler } from './jobs/newsScheduler.js';
 import newsRouter from './routes/newsRouter.js';
+import healthRouter from './routes/healthRouter.js';
 
 const app = express();
 app.use(express.json());
 
-// ── Health Check ─────────────────────────────────────────────
-app.get('/health', (_req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
-
 // ── 라우터 등록 ──────────────────────────────────────────────
+app.use('/health', healthRouter);
 app.use('/api/news', newsRouter);
 
 // ── 서버 시작 ────────────────────────────────────────────────
