@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env.local
+
+# Python (기존)
+venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
