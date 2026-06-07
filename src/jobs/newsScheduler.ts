@@ -10,7 +10,7 @@ import { scrapeArticleDetails } from '../utils/scraper.js';
 import { mapCategory } from '../utils/categoryMapper.js';
 import { fetchNaverNews } from '../utils/naverApi.js';
 
-// ── 2) Supabase 다건 INSERT ──────────────────────────────────
+// ── 2) Supabase 다건 삽입(INSERT) ─────────────────────────────
 async function saveArticles(articles: NewsArticleInsert[]): Promise<void> {
   const { error } = await supabase.from('news_articles').insert(articles);
 
@@ -30,7 +30,7 @@ async function rotateOldRecords(): Promise<void> {
       .limit(env.MAX_RECORDS_KEEP);
 
     if (selectError) {
-      console.error(`로테이션 SELECT 실패 (${keyword}): ${selectError.message}`);
+      console.error(`로테이션 조회(SELECT) 실패 (${keyword}): ${selectError.message}`);
       continue;
     }
 
@@ -47,14 +47,14 @@ async function rotateOldRecords(): Promise<void> {
       .not('id', 'in', `(${keepIds.join(',')})`);
 
     if (deleteError) {
-      console.error(`로테이션 DELETE 실패 (${keyword}): ${deleteError.message}`);
+      console.error(`로테이션 삭제(DELETE) 실패 (${keyword}): ${deleteError.message}`);
     }
   }
 
   console.log(`🗑️  로테이션 완료 — 각 키워드별 최근 ${env.MAX_RECORDS_KEEP}건 유지`);
 }
 
-// ── 4) 메인 Job: 키워드별 수집 → 적재 ────────────────────────
+// ── 4) 메인 작업(Job): 키워드별 수집 → 적재 ───────────────────
 async function runNewsJob(): Promise<void> {
   const startTime = Date.now();
   console.log(`\n📰 [${new Date().toISOString()}] 뉴스 수집 작업 시작...`);
@@ -71,7 +71,7 @@ async function runNewsJob(): Promise<void> {
         continue;
       }
 
-      // 2) HTML 정제 + 스크래핑 및 AI 요약 (Rate Limit 우회를 위해 순차 처리)
+      // 2) HTML 정제 + 스크래핑 및 AI 요약 (호출 제한(Rate Limit) 우회를 위해 순차 처리)
       const category = mapCategory(keyword);
       const rawMapped: (NewsArticleInsert | null)[] = [];
 
@@ -86,7 +86,7 @@ async function runNewsJob(): Promise<void> {
           continue;
         }
 
-        // 본문을 긁어왔으면 본문 사용, 실패했으면 API 제공 짧은 description 사용
+        // 본문을 긁어왔으면 본문 사용, 실패했으면 API가 제공하는 짧은 요약문(description) 사용
         const finalDescription = content ? content : stripHtmlTags(item.description);
 
         let summary: string | null = null;
@@ -117,7 +117,7 @@ async function runNewsJob(): Promise<void> {
         continue;
       }
 
-      // 3) Supabase 다건 INSERT
+      // 3) Supabase 다건 삽입(INSERT)
       await saveArticles(articles);
       console.log(`  ✅ "${keyword}" 적재 완료 (${articles.length}건 유효)`);
     } catch (err: unknown) {
@@ -135,7 +135,7 @@ async function runNewsJob(): Promise<void> {
   }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`📰 뉴스 수집 작업 완료 (${elapsed}s)\n`);
+  console.log(`📰 뉴스 수집 작업 완료 (${elapsed}초)\n`);
 }
 
 // ── 5) 스케줄러 등록 ─────────────────────────────────────────
