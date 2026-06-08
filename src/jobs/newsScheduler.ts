@@ -97,21 +97,86 @@ async function runNewsJob(): Promise<void> {
   console.log(`📰 뉴스 수집 작업 완료 (${elapsed}초)\n`);
 }
 
-// ── 3) 스케줄러 등록 ─────────────────────────────────────────
+// ── 3) 전날 데이터 삭제 작업 ────────────────────────────────────
+/**
+ * 한국 시간(KST) 기준 오늘의 00시 00분 00초에 해당하는 UTC Date 객체를 반환합니다.
+ */
+function getKstTodayStart(): Date {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+  const parts = formatter.formatToParts(now);
+  const year = parseInt(parts.find((p) => p.type === 'year')!.value, 10);
+  const month = parseInt(parts.find((p) => p.type === 'month')!.value, 10) - 1;
+  const day = parseInt(parts.find((p) => p.type === 'day')!.value, 10);
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const dateString = `${year}-${pad(month + 1)}-${pad(day)}T00:00:00+09:00`;
+  return new Date(dateString);
+}
+
+async function cleanPreviousDaysArticles(): Promise<void> {
+  try {
+    const todayStartKst = getKstTodayStart();
+    console.log(`\n🧹 [정리] 한국 시간 기준 오늘 0시(${todayStartKst.toISOString()}) 이전 뉴스 데이터 삭제 시작...`);
+
+    const { error } = await supabase
+      .from('news_articles')
+      .delete()
+      .lt('collected_at', todayStartKst.toISOString());
+
+    if (error) {
+      console.error(`❌ 전날 데이터 삭제 실패: ${error.message}`);
+    } else {
+      console.log(`🗑️ 전날 데이터 삭제 완료`);
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`❌ 전날 데이터 삭제 중 오류 발생: ${message}`);
+  }
+}
+
+// ── 4) 스케줄러 등록 ─────────────────────────────────────────
 export function startScheduler(): void {
-  cron.schedule('*/30 * * * *', () => {
+  // 1시간 간격 정시 실행
+  cron.schedule('0 * * * *', () => {
     runNewsJob().catch((err: unknown) => {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`🔥 스케줄러 치명적 오류: ${message}`);
     });
   });
 
-  console.log('⏰ 뉴스 스케줄러 등록 완료 — 매 30분마다 실행');
+  // 매일 한국 시간 00:00에 전날 데이터 삭제 실행
+  cron.schedule(
+    '0 0 * * *',
+    () => {
+      cleanPreviousDaysArticles().catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`🔥 일일 데이터 정리 스케줄러 오류: ${message}`);
+      });
+    },
+    {
+      timezone: 'Asia/Seoul',
+    }
+  );
+
+  console.log('⏰ 뉴스 스케줄러 등록 완료 — 매 1시간 정시 실행 (매일 00:00 전날 데이터 자동 삭제)');
 
   // 서버 기동 시 즉시 1회 실행 (초기 데이터 확보)
   console.log('🚀 초기 수집 시작...');
   runNewsJob().catch((err: unknown) => {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`🔥 초기 수집 실패: ${message}`);
+  });
+
+  // 서버 기동 시 즉시 1회 정리 (기존 구데이터 정리)
+  console.log('🧹 초기 데이터 정리 시작...');
+  cleanPreviousDaysArticles().catch((err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`🔥 초기 데이터 정리 실패: ${message}`);
   });
 }
