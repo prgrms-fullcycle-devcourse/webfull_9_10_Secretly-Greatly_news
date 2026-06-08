@@ -8,7 +8,7 @@ import type {
 
 /**
  * @swagger
- * /api/news/latest:
+ * /news/latest:
  *   get:
  *     summary: 최신 뉴스 기사 조회
  *     description: 데이터베이스에 적재된 최신 경제 뉴스 기사 목록을 키워드/카테고리 필터와 개수 제한을 설정하여 조회합니다.
