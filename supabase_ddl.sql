@@ -12,8 +12,12 @@ CREATE TABLE IF NOT EXISTS news_articles (
     source        TEXT        NOT NULL DEFAULT '',
     category      TEXT        NOT NULL DEFAULT 'general',
     summary       TEXT,
+    tag           TEXT,
     collected_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- 1-1) 기존 테이블에 tag 컬럼 추가 (이미 테이블이 있는 경우 마이그레이션) ──
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS tag TEXT;
 
 -- 2) 조회 성능을 위한 인덱스 ─────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_news_articles_collected_at
@@ -24,6 +28,9 @@ CREATE INDEX IF NOT EXISTS idx_news_articles_keyword
 
 CREATE INDEX IF NOT EXISTS idx_news_articles_category
     ON news_articles (category);
+
+CREATE INDEX IF NOT EXISTS idx_news_articles_tag
+    ON news_articles (tag);
 
 -- 3) RLS 활성화 ──────────────────────────────────────────────
 ALTER TABLE news_articles ENABLE ROW LEVEL SECURITY;

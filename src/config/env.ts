@@ -43,4 +43,14 @@ export const env: EnvConfig = {
     .map((s) => s.trim()),
   NEWS_DISPLAY_COUNT: requireNumericEnv("NEWS_DISPLAY_COUNT", 10),
   MAX_RECORDS_KEEP: requireNumericEnv("MAX_RECORDS_KEEP", 10),
+  GEMINI_API_KEY: process.env["GEMINI_API_KEY"]?.trim() || null,
+  GEMINI_MODEL: process.env["GEMINI_MODEL"]?.trim() || "gemini-2.5-flash-lite",
+  GEMINI_MIN_INTERVAL_MS: requireNumericEnv("GEMINI_MIN_INTERVAL_MS", 5000),
 };
+
+// 어떤 요약 엔진이 동작하는지 기동 시 1회 안내
+console.log(
+  env.GEMINI_API_KEY
+    ? `🤖 요약 엔진: Gemini (${env.GEMINI_MODEL})`
+    : "⚠️ GEMINI_API_KEY 미설정 — 요약 없이 수집만 진행됩니다.",
+);

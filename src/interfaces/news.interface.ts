@@ -15,6 +15,12 @@ export interface EnvConfig {
   readonly SEARCH_KEYWORDS: string[];
   readonly NEWS_DISPLAY_COUNT: number;
   readonly MAX_RECORDS_KEEP: number;
+  /** Gemini API 키 (없으면 로컬 추출식 요약으로 폴백) */
+  readonly GEMINI_API_KEY: string | null;
+  /** 사용할 Gemini 모델명 (기본: gemini-2.5-flash) */
+  readonly GEMINI_MODEL: string;
+  /** Gemini 요약 호출 간 최소 간격(ms) — 분당 한도 회피용 (기본: 5000) */
+  readonly GEMINI_MIN_INTERVAL_MS: number;
 }
 
 // ── 네이버 뉴스 API ────────────────────────────────────────
@@ -41,6 +47,17 @@ export interface NaverNewsResponse {
 
 export type ArticleCategory = "stock" | "coin" | "crypto" | "economy" | "general";
 
+// ── AI 분류 태그 ────────────────────────────────────────────
+/**
+ * AI가 본문을 읽고 부여하는 뉴스 성격 태그
+ * - MACRO: 금리/CPI/환율/FOMC 등 시장 전체에 영향을 주는 거시경제 뉴스
+ * - EARNINGS: 어닝 서프라이즈/분기 실적/대규모 수주 공시 뉴스
+ * - INDUSTRY: 섹터 전반의 산업 동향·트렌드 뉴스
+ * - REGULATION: 금융 규제/세금 정책/사법 리스크 등 규제·정책 뉴스
+ * - ISSUE: 경영진 교체/공장 화재/계약 파기 등 개별 종목 돌발 뉴스
+ */
+export type ArticleTag = "MACRO" | "EARNINGS" | "INDUSTRY" | "REGULATION" | "ISSUE";
+
 // ── Supabase 테이블 매핑 (news_articles) ────────────────────
 
 /** news_articles 테이블 행 (SELECT 결과 매핑) */
@@ -54,6 +71,7 @@ export interface NewsArticleRow {
   readonly source: string;
   readonly category: ArticleCategory;
   readonly summary?: string | null;
+  readonly tag?: ArticleTag | null;
   readonly collected_at: string;
 }
 
@@ -67,6 +85,7 @@ export interface NewsArticleInsert {
   readonly source: string;
   readonly category: ArticleCategory;
   readonly summary?: string | null;
+  readonly tag?: ArticleTag | null;
 }
 
 // ── API 응답 포맷 ───────────────────────────────────────────
