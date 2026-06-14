@@ -21,9 +21,11 @@ function requireEnv(key: string): string {
 /**
  * 숫자형 환경변수를 읽고 기본값을 적용한다.
  */
-function requireNumericEnv(key: string, defaultValue: number): number {
+function requireNumericEnv(key: string): number {
   const raw = process.env[key];
-  if (!raw) return defaultValue;
+  if (!raw) {
+    throw new Error(`❌ 필수 환경변수 ${key}가 설정되지 않았습니다. .env 파일을 확인하세요.`);
+  }
   const parsed = parseInt(raw, 10);
   if (isNaN(parsed)) {
     throw new Error(`❌ 환경변수 ${key}의 값 "${raw}"은(는) 유효한 숫자가 아닙니다.`);
@@ -33,19 +35,19 @@ function requireNumericEnv(key: string, defaultValue: number): number {
 
 /** 검증이 완료된 환경변수 객체 */
 export const env: EnvConfig = {
-  PORT: requireNumericEnv("PORT", 3000),
+  PORT: requireNumericEnv("PORT"),
   SUPABASE_URL: requireEnv("SUPABASE_URL"),
   SUPABASE_SERVICE_ROLE_KEY: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   NAVER_CLIENT_ID: requireEnv("NAVER_CLIENT_ID"),
   NAVER_CLIENT_SECRET: requireEnv("NAVER_CLIENT_SECRET"),
-  SEARCH_KEYWORDS: (process.env["SEARCH_KEYWORDS"] ?? "주식,코인,암호화폐,경제")
+  SEARCH_KEYWORDS: requireEnv("SEARCH_KEYWORDS")
     .split(",")
     .map((s) => s.trim()),
-  NEWS_DISPLAY_COUNT: requireNumericEnv("NEWS_DISPLAY_COUNT", 10),
-  MAX_RECORDS_KEEP: requireNumericEnv("MAX_RECORDS_KEEP", 10),
+  NEWS_DISPLAY_COUNT: requireNumericEnv("NEWS_DISPLAY_COUNT"),
+  MAX_RECORDS_KEEP: requireNumericEnv("MAX_RECORDS_KEEP"),
   GEMINI_API_KEY: process.env["GEMINI_API_KEY"]?.trim() || null,
-  GEMINI_MODEL: process.env["GEMINI_MODEL"]?.trim() || "gemini-2.5-flash-lite",
-  GEMINI_MIN_INTERVAL_MS: requireNumericEnv("GEMINI_MIN_INTERVAL_MS", 5000),
+  GEMINI_MODEL: requireEnv("GEMINI_MODEL"),
+  GEMINI_MIN_INTERVAL_MS: requireNumericEnv("GEMINI_MIN_INTERVAL_MS"),
 };
 
 // 어떤 요약 엔진이 동작하는지 기동 시 1회 안내

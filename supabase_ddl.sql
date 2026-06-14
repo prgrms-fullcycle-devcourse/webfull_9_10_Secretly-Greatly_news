@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS news_articles (
     description   TEXT        NOT NULL DEFAULT '',
     pub_date      TEXT        NOT NULL,
     source        TEXT        NOT NULL DEFAULT '',
-    category      TEXT        NOT NULL DEFAULT 'general',
     summary       TEXT,
     tag           TEXT,
     collected_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -26,8 +25,6 @@ CREATE INDEX IF NOT EXISTS idx_news_articles_collected_at
 CREATE INDEX IF NOT EXISTS idx_news_articles_keyword
     ON news_articles (keyword);
 
-CREATE INDEX IF NOT EXISTS idx_news_articles_category
-    ON news_articles (category);
 
 CREATE INDEX IF NOT EXISTS idx_news_articles_tag
     ON news_articles (tag);

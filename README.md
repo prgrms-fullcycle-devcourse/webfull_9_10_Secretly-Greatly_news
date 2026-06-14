@@ -109,8 +109,7 @@ cp .env.sample .env.local
 - **Method**: `GET`
 - **URL**: `/api/news/latest`
 - **Query Parameters (선택)**:
-  - `keyword` (string): 특정 수집 키워드로만 필터링 (예: `주식`, `코인` 등)
-  - `category` (string): 매핑된 카테고리로 필터링 (예: `stock`, `coin`, `crypto`, `economy`, `general`)
+  - `keyword` (string): 특정 수집 키워드로만 필터링 (예: `국내증시`, `해외증시` 등)
   - `limit` (number): 가져올 기사 수 한도 (기본: `40`, 최대 `100`)
 - **Response 예시**:
   ```json
@@ -125,7 +124,6 @@ cp .env.sample .env.local
         "description": "뉴스 본문 내용 전문 혹은 설명 요약...",
         "pub_date": "Sun, 07 Jun 2026 10:15:00 +0900",
         "source": "한국경제",
-        "category": "stock",
         "summary": "• 첫 번째 요약 문장입니다.\n• 두 번째 요약 문장입니다.\n• 세 번째 요약 문장입니다.",
         "collected_at": "2026-06-07T01:15:05.123Z"
       }

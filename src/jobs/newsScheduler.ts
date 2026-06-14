@@ -8,7 +8,6 @@ import type { NewsArticleInsert } from '../interfaces/news.interface.js';
 import { stripHtmlTags } from '../utils/summarizer.js';
 import { summarizeWithGemini } from '../utils/geminiSummarizer.js';
 import { scrapeArticleDetails } from '../utils/scraper.js';
-import { mapCategory } from '../utils/categoryMapper.js';
 import { fetchNaverNews } from '../utils/naverApi.js';
 
 // ── 1) Supabase 다건 삽입(INSERT) ─────────────────────────────
@@ -61,8 +60,6 @@ async function runNewsJob(): Promise<void> {
         continue;
       }
 
-      const category = mapCategory(keyword);
-
       // 2) 중복 제거: DB에 이미 있는 link는 스크래핑/AI 요약 전에 걸러낸다.
       //    (저장 키와 동일하게 originallink 우선으로 link를 산정)
       const candidateLinks = rawArticles.map((item) => item.originallink || item.link);
@@ -114,7 +111,6 @@ async function runNewsJob(): Promise<void> {
           description: finalDescription,
           pub_date: item.pubDate,
           source: publisher,
-          category,
           summary: result.summary,
           tag: result.tag,
         });

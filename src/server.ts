@@ -19,7 +19,6 @@ app.listen(env.PORT, () => {
   console.log(`\n🌐 서버 실행 중: http://localhost:${env.PORT}`);
   console.log(`   📡 GET /news/latest`);
   console.log(`   📡 GET /news/latest?keyword=주식`);
-  console.log(`   📡 GET /news/latest?category=stock`);
   console.log(`   💚 GET /health`);
   console.log(`   📖 Swagger API Docs: http://localhost:${env.PORT}/docs\n`);
 

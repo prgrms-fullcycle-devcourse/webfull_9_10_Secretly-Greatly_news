@@ -19,13 +19,7 @@ import type {
  *         name: keyword
  *         schema:
  *           type: string
- *         description: "검색 키워드 필터 (예: 주식, 코인, 암호화폐, 경제)"
- *       - in: query
- *         name: category
- *         schema:
- *           type: string
- *           enum: [stock, coin, crypto, economy, general]
- *         description: 기사 카테고리 필터
+ *         description: "검색 키워드 필터 (예: 국내증시, 해외증시, 경제)"
  *       - in: query
  *         name: limit
  *         schema:
@@ -71,9 +65,6 @@ import type {
  *                       source:
  *                         type: string
  *                         example: "연합뉴스"
- *                       category:
- *                         type: string
- *                         example: "stock"
  *                       summary:
  *                         type: string
  *                         nullable: true
@@ -106,7 +97,7 @@ export async function getLatestNews(
     Record<string, never>,
     LatestNewsResponse | ErrorResponse,
     never,
-    { keyword?: string; category?: string; limit?: string }
+    { keyword?: string; limit?: string }
   >,
   res: Response<LatestNewsResponse | ErrorResponse>,
 ): Promise<void> {
@@ -123,12 +114,6 @@ export async function getLatestNews(
     const keyword = req.query.keyword;
     if (keyword && typeof keyword === 'string') {
       query = query.eq('keyword', keyword);
-    }
-
-    // 카테고리 필터
-    const category = req.query.category;
-    if (category && typeof category === 'string') {
-      query = query.eq('category', category);
     }
 
     const { data, error } = await query;

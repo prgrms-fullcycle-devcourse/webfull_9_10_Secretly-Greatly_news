@@ -43,10 +43,6 @@ export interface NaverNewsResponse {
   readonly items: NaverNewsItem[];
 }
 
-// ── 기사 카테고리 ───────────────────────────────────────────
-
-export type ArticleCategory = "stock" | "coin" | "crypto" | "economy" | "general";
-
 // ── AI 분류 태그 ────────────────────────────────────────────
 /**
  * AI가 본문을 읽고 부여하는 뉴스 성격 태그
@@ -69,7 +65,6 @@ export interface NewsArticleRow {
   readonly description: string;
   readonly pub_date: string;
   readonly source: string;
-  readonly category: ArticleCategory;
   readonly summary?: string | null;
   readonly tag?: ArticleTag | null;
   readonly collected_at: string;
@@ -83,7 +78,6 @@ export interface NewsArticleInsert {
   readonly description: string;
   readonly pub_date: string;
   readonly source: string;
-  readonly category: ArticleCategory;
   readonly summary?: string | null;
   readonly tag?: ArticleTag | null;
 }
