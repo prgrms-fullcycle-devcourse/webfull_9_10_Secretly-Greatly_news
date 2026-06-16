@@ -103,13 +103,11 @@ export interface NewsTimelineItem {
   readonly pub_date: string;
 }
 
-/** GET /api/news 성공 응답 (data 안에 totalCount + items) */
+/** GET /api/v1/news-feed 성공 응답 (백엔드가 response.data.items 로 바로 읽음) */
 export interface NewsTimelineResponse {
   readonly success: true;
-  readonly data: {
-    readonly totalCount: number;
-    readonly items: NewsTimelineItem[];
-  };
+  readonly count: number;
+  readonly items: NewsTimelineItem[];
 }
 
 /** API 에러 응답 */

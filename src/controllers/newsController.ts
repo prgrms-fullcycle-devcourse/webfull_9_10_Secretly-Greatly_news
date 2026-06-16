@@ -154,7 +154,7 @@ export async function getLatestNews(
 
 /**
  * @swagger
- * /api/news:
+ * /api/v1/news-feed:
  *   get:
  *     summary: AI 분석 뉴스 타임라인 조회 (백엔드 프록시 전용)
  *     description: >
@@ -172,22 +172,19 @@ export async function getLatestNews(
  *               type: object
  *               properties:
  *                 success: { type: boolean, example: true }
- *                 data:
- *                   type: object
- *                   properties:
- *                     totalCount: { type: integer, example: 2 }
- *                     items:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id: { type: integer, example: 1 }
- *                           title: { type: string, example: "코스피 상승 마감" }
- *                           tag: { type: string, nullable: true, example: "EARNINGS" }
- *                           source: { type: string, example: "연합뉴스" }
- *                           summary: { type: string, nullable: true, example: "• 코스피 상승.\n• 외국인 매수세." }
- *                           link: { type: string, example: "https://news.naver.com/..." }
- *                           pub_date: { type: string, example: "2026-06-05T15:40:15.000Z" }
+ *                 count: { type: integer, example: 2 }
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: integer, example: 1 }
+ *                       title: { type: string, example: "코스피 상승 마감" }
+ *                       tag: { type: string, nullable: true, example: "EARNINGS" }
+ *                       source: { type: string, example: "연합뉴스" }
+ *                       summary: { type: string, nullable: true, example: "코스피가 외국인 매수세에 상승 마감했다." }
+ *                       link: { type: string, example: "https://news.naver.com/..." }
+ *                       pub_date: { type: string, example: "2026-06-05T15:40:15.000Z" }
  *       500:
  *         description: 서버 조회 실패 또는 내부 서버 오류
  */
@@ -224,10 +221,8 @@ export async function getNewsTimeline(
 
     res.json({
       success: true,
-      data: {
-        totalCount: items.length,
-        items,
-      },
+      count: items.length,
+      items,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
