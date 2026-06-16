@@ -4,7 +4,16 @@ import type {
   NewsArticleRow,
   LatestNewsResponse,
   ErrorResponse,
+  NewsTimelineItem,
+  NewsTimelineResponse,
 } from '../interfaces/news.interface.js';
+import { env } from '../config/env.js';
+
+/** 네이버 pub_date(RFC-822 등) 문자열을 ISO-8601로 변환. 파싱 실패 시 원본 유지 */
+function toIsoDate(raw: string): string {
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? raw : parsed.toISOString();
+}
 
 /**
  * @swagger
@@ -139,6 +148,90 @@ export async function getLatestNews(
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`❌ /api/news/latest 오류: ${message}`);
+    res.status(500).json({ success: false, error: '내부 서버 오류' });
+  }
+}
+
+/**
+ * @swagger
+ * /api/news:
+ *   get:
+ *     summary: AI 분석 뉴스 타임라인 조회 (백엔드 프록시 전용)
+ *     description: >
+ *       백엔드(NestJS)가 프록시로 호출하는 엔드포인트.
+ *       당일 수집된 뉴스를 최신순으로 반환한다.
+ *       (DB는 매일 00시 KST에 전날 데이터가 삭제되므로 사실상 당일 한정 스냅샷)
+ *     tags:
+ *       - News
+ *     responses:
+ *       200:
+ *         description: 타임라인 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalCount: { type: integer, example: 2 }
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer, example: 1 }
+ *                           title: { type: string, example: "코스피 상승 마감" }
+ *                           tag: { type: string, nullable: true, example: "EARNINGS" }
+ *                           source: { type: string, example: "연합뉴스" }
+ *                           summary: { type: string, nullable: true, example: "• 코스피 상승.\n• 외국인 매수세." }
+ *                           link: { type: string, example: "https://news.naver.com/..." }
+ *                           pub_date: { type: string, example: "2026-06-05T15:40:15.000Z" }
+ *       500:
+ *         description: 서버 조회 실패 또는 내부 서버 오류
+ */
+export async function getNewsTimeline(
+  _req: Request,
+  res: Response<NewsTimelineResponse | ErrorResponse>,
+): Promise<void> {
+  try {
+    const { data, error } = await supabase
+      .from('news_articles')
+      .select('id, title, tag, source, summary, link, pub_date')
+      .order('collected_at', { ascending: false })
+      .limit(env.MAX_RECORDS_KEEP);
+
+    if (error) {
+      res.status(500).json({
+        success: false,
+        error: `데이터 조회 실패: ${error.message}`,
+      });
+      return;
+    }
+
+    const rows = (data ?? []) as NewsArticleRow[];
+
+    const items: NewsTimelineItem[] = rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      tag: row.tag ?? null,
+      source: row.source,
+      summary: row.summary ?? null,
+      link: row.link,
+      pub_date: toIsoDate(row.pub_date),
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        totalCount: items.length,
+        items,
+      },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`❌ /api/news 오류: ${message}`);
     res.status(500).json({ success: false, error: '내부 서버 오류' });
   }
 }

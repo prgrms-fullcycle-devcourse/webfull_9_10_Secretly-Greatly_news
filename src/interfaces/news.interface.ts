@@ -92,6 +92,26 @@ export interface LatestNewsResponse {
   readonly fetchedAt: string;
 }
 
+/** GET /api/news – 타임라인 개별 아이템 (백엔드 프록시가 소비하는 형태) */
+export interface NewsTimelineItem {
+  readonly id: number;
+  readonly title: string;
+  readonly tag: ArticleTag | null;
+  readonly source: string;
+  readonly summary: string | null;
+  readonly link: string;
+  readonly pub_date: string;
+}
+
+/** GET /api/news 성공 응답 (data 안에 totalCount + items) */
+export interface NewsTimelineResponse {
+  readonly success: true;
+  readonly data: {
+    readonly totalCount: number;
+    readonly items: NewsTimelineItem[];
+  };
+}
+
 /** API 에러 응답 */
 export interface ErrorResponse {
   readonly success: false;
